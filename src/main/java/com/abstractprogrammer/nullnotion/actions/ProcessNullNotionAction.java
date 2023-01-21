@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 public class ProcessNullNotionAction extends AnAction {
@@ -108,7 +109,7 @@ public class ProcessNullNotionAction extends AnAction {
             PsiDocumentManager.getInstance(project).commitDocument(document);
             connection.close();
             Messages.showInfoMessage(project, "Null Notion processing complete", "Success");
-        } catch (Exception ex) {
+        } catch (IllegalArgumentException | SQLException | ClassNotFoundException ex) {
             logger.error(ex);
             Messages.showErrorDialog(project, ex.getMessage(), "Error");
         }
