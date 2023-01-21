@@ -8,13 +8,13 @@
     <name>NullNotion</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@yourcompan.com" url="https://www.yourcompany.com">YourCompny</vendor>
+    <vendor email="solankid297@gmail.com" url="https://github.com/DineshSolanki/NullNotion">Abstract Programmer</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Enter shfffffffffffffffffffffffffffggggggggggggggggggggggggggggggggggggggggg
+    Auto add @Nullable and @NotNull annotations to your entity classes based on the database schema.
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
@@ -30,7 +30,6 @@
         <action id="Process NullNotion" class="com.abstractprogrammer.nullnotion.actions.ProcessNullNotionAction"
                 text="Process NullNotion">
             <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="ShowIntentionsGroup"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl 1"/>
         </action>
     </actions>
 </idea-plugin>
