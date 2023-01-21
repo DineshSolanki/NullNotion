@@ -14,6 +14,7 @@ public final class ConnectionSettings implements PersistentStateComponent<Connec
 
     public static class State {
         public String connectionString;
+        public String databaseName;
     }
 
     @Nullable
