@@ -26,7 +26,6 @@ import java.util.Optional;
 
 public class ProcessNullNotionAction extends AnAction {
     private final Logger logger = Logger.getInstance(getClass());
-    private static final String JDBC_DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static final String ENTITY_ANNOTATION = "javax.persistence.Entity";
     private static final String COLUMN_ANNOTATION = "javax.persistence.Column";
     private static final String JOIN_COLUMN_ANNOTATION = "javax.persistence.JoinColumn";
@@ -121,7 +120,7 @@ public class ProcessNullNotionAction extends AnAction {
         }
     }
     Optional<Connection> getDatabaseDriver(Project project) throws ClassNotFoundException, SQLException {
-        ConnectionSettings connectionSettings = ServiceManager.getService(project, ConnectionSettings.class);
+        ConnectionSettings connectionSettings = project.getService(ConnectionSettings.class);
         @Nullable String connectionString;
         if (connectionSettings.getState().connectionString == null) {
             connectionString = Messages.showInputDialog(project, "Please enter the connection string for the database:", "Connection String", Messages.getQuestionIcon());
