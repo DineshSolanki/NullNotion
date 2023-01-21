@@ -20,7 +20,12 @@ import java.util.Arrays;
 
 public class ProcessNullNotionAction extends AnAction {
     private final Logger logger = Logger.getInstance(getClass());
-
+    private static final String JDBC_DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+    private static final String ENTITY_ANNOTATION = "javax.persistence.Entity";
+    private static final String COLUMN_ANNOTATION = "javax.persistence.Column";
+    private static final String JOIN_COLUMN_ANNOTATION = "javax.persistence.JoinColumn";
+    public static final String NULLABLE_IMPORT = "org.springframework.lang.Nullable";
+    public static final String NON_NULL_IMPORT = "org.springframework.lang.NonNull";
     @Override
     public void actionPerformed(AnActionEvent e) {
         //get the project
@@ -31,7 +36,7 @@ public class ProcessNullNotionAction extends AnAction {
 
         //get the selected class
         PsiClass selectedClass = PsiTreeUtil.getParentOfType(psiJavaFile.findElementAt(e.getData(CommonDataKeys.CARET).getOffset()), PsiClass.class);
-        PsiAnnotation entityAnnotation = selectedClass.getAnnotation("javax.persistence.Entity");
+        PsiAnnotation entityAnnotation = selectedClass.getAnnotation(ENTITY_ANNOTATION);
         if (entityAnnotation == null) {
             Messages.showErrorDialog(project, "Selected class is not an entity class", "Error");
             return;
@@ -45,7 +50,7 @@ public class ProcessNullNotionAction extends AnAction {
         JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
         //establish a connection to the database and retrieve the schema
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            Class.forName(JDBC_DRIVER);
             Connection connection = DriverManager.getConnection(connectionString);
             DatabaseMetaData metaData = connection.getMetaData();
             ResultSet resultSet = metaData.getTables(null, null, entityClassName, null);
@@ -54,11 +59,11 @@ public class ProcessNullNotionAction extends AnAction {
                 //iterate through fields of the class
                 for (PsiField field : selectedClass.getFields()) {
                     String fieldName = field.getName();
-                    PsiAnnotation fieldAnnotation = field.getAnnotation("javax.persistence.Column");
+                    PsiAnnotation fieldAnnotation = field.getAnnotation(COLUMN_ANNOTATION);
                     if (fieldAnnotation != null) {
                         fieldName = fieldAnnotation.findAttributeValue("name").getText().replaceAll("\"", "");
                     } else {
-                        fieldAnnotation = field.getAnnotation("javax.persistence.JoinColumn");
+                        fieldAnnotation = field.getAnnotation(JOIN_COLUMN_ANNOTATION);
                         if (fieldAnnotation != null) {
                             fieldName = fieldAnnotation.findAttributeValue("name").getText().replaceAll("\"", "");
                         }
@@ -80,17 +85,17 @@ public class ProcessNullNotionAction extends AnAction {
                 }
             }
             // Import the "org.springframework.lang.Nullable" annotation
-            PsiImportStatement nullableImport = elementFactory.createImportStatement(psiFacade.findClass("org.springframework.lang.Nullable", GlobalSearchScope.allScope(project)));
+            PsiImportStatement nullableImport = elementFactory.createImportStatement(psiFacade.findClass(NULLABLE_IMPORT, GlobalSearchScope.allScope(project)));
             // Import the "org.springframework.lang.NonNull" annotation
-            PsiImportStatement nonNullImport = elementFactory.createImportStatement(psiFacade.findClass("org.springframework.lang.NonNull", GlobalSearchScope.allScope(project)));
+            PsiImportStatement nonNullImport = elementFactory.createImportStatement(psiFacade.findClass(NON_NULL_IMPORT, GlobalSearchScope.allScope(project)));
             PsiImportList importList = psiJavaFile.getImportList();
             PsiElement lastImport = importList.getLastChild();
-            if (Arrays.stream(importList.getImportStatements()).noneMatch(importStatement -> importStatement.getQualifiedName().equals("org.springframework.lang.Nullable"))) {
+            if (Arrays.stream(importList.getImportStatements()).noneMatch(importStatement -> importStatement.getQualifiedName().equals(NULLABLE_IMPORT))) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
                     importList.addAfter(nullableImport, lastImport);
                 });
             }
-            if (Arrays.stream(importList.getImportStatements()).noneMatch(importStatement -> importStatement.getQualifiedName().equals("org.springframework.lang.NonNull"))) {
+            if (Arrays.stream(importList.getImportStatements()).noneMatch(importStatement -> importStatement.getQualifiedName().equals(NON_NULL_IMPORT))) {
                 WriteCommandAction.runWriteCommandAction(project, () -> {
                     importList.addAfter(nonNullImport, lastImport);
 //                    psiJavaFile.addAfter(nonNullImport,lastImport);
