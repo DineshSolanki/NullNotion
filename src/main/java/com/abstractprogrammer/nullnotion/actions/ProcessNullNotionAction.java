@@ -1,9 +1,11 @@
 package com.abstractprogrammer.nullnotion.actions;
 
+import com.abstractprogrammer.nullnotion.component.ConnectionSettings;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
@@ -44,9 +46,15 @@ public class ProcessNullNotionAction extends AnAction {
         }
         //get the class name
         String entityClassName = selectedClass.getName();
-
+        String connectionString;
+        ConnectionSettings connectionSettings = ServiceManager.getService(project, ConnectionSettings.class);
+        if (connectionSettings.getState().connectionString == null) {
+            connectionString = Messages.showInputDialog(project, "Please enter the connection string for the database:", "Connection String", Messages.getQuestionIcon());
+            connectionSettings.getState().connectionString = connectionString;
+        } else {
+            connectionString = connectionSettings.getState().connectionString;
+        }
         //prompt the user for the connection string
-        String connectionString = Messages.showInputDialog(project, "Please enter the connection string for the database:", "Connection String", Messages.getQuestionIcon());
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
         JavaPsiFacade psiFacade = JavaPsiFacade.getInstance(project);
         //establish a connection to the database and retrieve the schema
