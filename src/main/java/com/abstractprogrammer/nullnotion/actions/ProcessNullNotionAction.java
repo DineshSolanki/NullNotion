@@ -74,7 +74,11 @@ public class ProcessNullNotionAction extends AnAction {
         if (selectedClass == null) {
             selectedClass = PsiTreeUtil.getParentOfType(psiJavaFile.findElementAt(e.getData(CommonDataKeys.CARET).getOffset()), PsiClass.class);
         }
-        annotationHelper.processAnnotations(project, psiJavaFile, selectedClass);
+        if (selectedClass != null) {
+            annotationHelper.processAnnotations(project, psiJavaFile, selectedClass);
+        } else {
+            Messages.showErrorDialog("Could not find the class", "Error");
+        }
     }
 }
 
