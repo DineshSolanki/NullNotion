@@ -27,7 +27,6 @@ import java.util.Optional;
 
 public class AnnotationHelper {
     private final Logger logger = Logger.getInstance(getClass());
-    private static final String ENTITY_ANNOTATION = "javax.persistence.Entity";
     private static final String COLUMN_ANNOTATION = "javax.persistence.Column";
     private static final String JOIN_COLUMN_ANNOTATION = "javax.persistence.JoinColumn";
     public static final String NULLABLE_IMPORT = "org.springframework.lang.Nullable";

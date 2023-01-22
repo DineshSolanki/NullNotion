@@ -54,8 +54,6 @@ public class ProcessNullNotionAction extends AnAction {
     public void actionPerformed(AnActionEvent e) {
         //get the project
         Project project = e.getProject();
-
-        //get the editor
         if (selectedClass != null && psiJavaFile != null) {
             annotationHelper.processAnnotations(project, psiJavaFile, selectedClass);
         } else {
