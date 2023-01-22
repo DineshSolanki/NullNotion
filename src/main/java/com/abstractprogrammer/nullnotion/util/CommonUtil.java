@@ -1,4 +1,4 @@
-package com.abstractprogrammer.nullnotion.Util;
+package com.abstractprogrammer.nullnotion.util;
 
 import org.apache.commons.lang.StringEscapeUtils;
 

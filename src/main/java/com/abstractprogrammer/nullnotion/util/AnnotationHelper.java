@@ -1,4 +1,4 @@
-package com.abstractprogrammer.nullnotion.Util;
+package com.abstractprogrammer.nullnotion.util;
 
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -55,7 +55,7 @@ public class AnnotationHelper {
                 saveDocument(project, psiJavaFile);
             }
             Messages.showInfoMessage(project, "Null Notion processing complete", "Success");
-        } catch (IllegalArgumentException | SQLException | ClassNotFoundException ex) {
+        } catch (IllegalArgumentException | SQLException ex) {
             logger.error(ex);
             Messages.showErrorDialog(project, ex.getMessage(), "Error");
         }
