@@ -10,4 +10,18 @@ public class CommonUtil {
         input = StringEscapeUtils.escapeSql(input);
         return input;
     }
+    private boolean isValidConnectionString(String connectionString, String databaseType) {
+        switch(databaseType) {
+            case "MySQL":
+                return connectionString.matches("jdbc:mysql://[\\w\\d.]+:[\\d]+/[\\w\\d]+\\?user=[\\w\\d]+&password=[\\w\\d]+");
+            case "PostgreSQL":
+                return connectionString.matches("jdbc:postgresql://[\\w\\d\\.]+:[\\d]+/[\\w\\d]+\\?user=[\\w\\d]+&password=[\\w\\d]+");
+            case "Oracle":
+                return connectionString.matches("jdbc:oracle:thin:@[\\w\\d\\.]+:[\\d]+:[\\w\\d]+");
+            case "MSSQL":
+                return connectionString.matches("jdbc:sqlserver://[\\w\\d\\.]+:[\\d]+;database=[\\w\\d]+;user=[\\w\\d]+;password=[\\w\\d]+");
+            default:
+                return false;
+        }
+    }
 }

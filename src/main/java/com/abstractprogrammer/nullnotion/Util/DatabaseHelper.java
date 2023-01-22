@@ -24,12 +24,11 @@ public class DatabaseHelper {
                 connectionString = settingsState.connectionString;
             }
             String JDBC_DRIVER = null;
-            if(settingsState.databaseName != null) {
+            if (settingsState.databaseName != null) {
                 JDBC_DRIVER = settingsState.databaseName;
-            } 
-            else {
+            } else {
                 String[] options = {"MySQL", "PostgreSQL", "Oracle", "MSSQL"};
-                String selectedOption = Messages.showEditableChooseDialog( "Please select the database type:", "Database Type", Messages.getQuestionIcon(),options, options[0], null);
+                String selectedOption = Messages.showEditableChooseDialog("Please select the database type:", "Database Type", Messages.getQuestionIcon(), options, options[0], null);
                 String CONNECTION_TEMPLATE;
                 if (selectedOption != null) {
                     switch (selectedOption) {
@@ -53,7 +52,7 @@ public class DatabaseHelper {
                     settingsState.databaseName = JDBC_DRIVER;
                 }
             }
-            if(StringUtils.isNotBlank(connectionString) && StringUtils.isNotBlank(JDBC_DRIVER)) {
+            if (StringUtils.isNotBlank(connectionString) && StringUtils.isNotBlank(JDBC_DRIVER)) {
                 try {
                     Class.forName(JDBC_DRIVER);
                 } catch (ClassNotFoundException e) {
