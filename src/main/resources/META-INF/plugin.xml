@@ -14,7 +14,13 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Auto add @Nullable and @NotNull annotations to your entity classes based on the database schema.
+    NullNotion is a powerful plugin that helps Java developers to handle nullability of fields in their code. 
+    It automatically adds @NonNull or @Nullable annotations to fields based on the database schema. 
+    It supports multiple database types such as MySQL, PostgreSQL, Oracle, and MSSQL. 
+    The plugin also allows developers to choose from different non-null or nullable annotations. 
+    Additionally, developers can save the connection string and database type on a per-project basis. 
+    This feature-rich plugin improves the development process by reducing the chances of null pointer exceptions and increases code readability. 
+    Try NullNotion today and take your coding to the next level!
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.
