@@ -1,37 +1,24 @@
 package com.abstractprogrammer.nullnotion.actions;
 
 import com.abstractprogrammer.nullnotion.Util.AnnotationHelper;
-import com.abstractprogrammer.nullnotion.component.ConnectionSettings;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.command.WriteCommandAction;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.*;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.util.PsiTreeUtil;
-import org.apache.commons.lang.StringUtils;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Optional;
 
 public class ProcessNullNotionAction extends AnAction {
-    private final Logger logger = Logger.getInstance(getClass());
     private static final String ENTITY_ANNOTATION = "javax.persistence.Entity";
+    private final Logger logger = Logger.getInstance(getClass());
     PsiClass selectedClass;
+    PsiJavaFile psiJavaFile;
     AnnotationHelper annotationHelper = new AnnotationHelper();
 
     @Override
@@ -47,7 +34,7 @@ public class ProcessNullNotionAction extends AnAction {
             logger.warn("Selected file is not a java file");
             presentation.setEnabledAndVisible(false);
         } else {
-            PsiJavaFile psiJavaFile = (PsiJavaFile) PsiManager.getInstance(project).findFile(selectedFile);
+            psiJavaFile = (PsiJavaFile) PsiManager.getInstance(project).findFile(selectedFile);
             if (psiJavaFile == null) {
                 logger.warn("could not find psi file");
                 presentation.setEnabledAndVisible(false);
@@ -69,12 +56,7 @@ public class ProcessNullNotionAction extends AnAction {
         Project project = e.getProject();
 
         //get the editor
-        PsiJavaFile psiJavaFile = (PsiJavaFile) e.getData(CommonDataKeys.PSI_FILE);
-        //get the selected class
-        if (selectedClass == null) {
-            selectedClass = PsiTreeUtil.getParentOfType(psiJavaFile.findElementAt(e.getData(CommonDataKeys.CARET).getOffset()), PsiClass.class);
-        }
-        if (selectedClass != null) {
+        if (selectedClass != null && psiJavaFile != null) {
             annotationHelper.processAnnotations(project, psiJavaFile, selectedClass);
         } else {
             Messages.showErrorDialog("Could not find the class", "Error");
