@@ -74,12 +74,6 @@ public class ProcessNullNotionAction extends AnAction {
         if (selectedClass == null) {
             selectedClass = PsiTreeUtil.getParentOfType(psiJavaFile.findElementAt(e.getData(CommonDataKeys.CARET).getOffset()), PsiClass.class);
         }
-        PsiAnnotation entityAnnotation = selectedClass.getAnnotation(ENTITY_ANNOTATION);
-        if (entityAnnotation == null) {
-            Messages.showErrorDialog(project, "Selected class is not an entity class", "Error");
-            return;
-        }
-        //get the class name
         annotationHelper.processAnnotations(project, psiJavaFile, selectedClass);
     }
 }
