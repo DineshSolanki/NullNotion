@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
+import com.intellij.psi.PsiAnnotationMemberValue;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
@@ -15,6 +16,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiImportList;
 import com.intellij.psi.PsiImportStatement;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.search.GlobalSearchScope;
 
 import java.sql.Connection;
@@ -52,11 +54,11 @@ public class AnnotationHelper {
                     String fieldName = field.getName();
                     PsiAnnotation fieldAnnotation = field.getAnnotation(COLUMN_ANNOTATION);
                     if (fieldAnnotation != null) {
-                        fieldName = fieldAnnotation.findAttributeValue("name").getText().replaceAll("\"", "");
+                        fieldName = getNameFromAnnotation(fieldAnnotation);
                     } else {
                         fieldAnnotation = field.getAnnotation(JOIN_COLUMN_ANNOTATION);
                         if (fieldAnnotation != null) {
-                            fieldName = fieldAnnotation.findAttributeValue("name").getText().replaceAll("\"", "");
+                            fieldName = getNameFromAnnotation(fieldAnnotation);
                         }
                     }
                     ResultSet columnInfo = metaData.getColumns(null, null, tableName, fieldName);
@@ -103,5 +105,20 @@ public class AnnotationHelper {
             logger.error(ex);
             Messages.showErrorDialog(project, ex.getMessage(), "Error");
         }
+    }
+    private String getNameFromAnnotation(PsiAnnotation annotation) {
+        String stringValue = "";
+        if (annotation != null) {
+            PsiAnnotationMemberValue nameValuePair = annotation.findDeclaredAttributeValue("name");
+            if (nameValuePair != null) {
+                if (nameValuePair instanceof PsiLiteralExpression) {
+                    Object value = ((PsiLiteralExpression) nameValuePair).getValue();
+                    if (value != null) {
+                        stringValue = value.toString().replaceAll("\"", "");
+                    }
+                }
+            }
+        }
+        return stringValue;
     }
 }
