@@ -36,6 +36,7 @@
         <action id="Process NullNotion" class="com.abstractprogrammer.nullnotion.actions.ProcessNullNotionAction"
                 text="Process NullNotion">
             <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="ShowIntentionsGroup"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>
