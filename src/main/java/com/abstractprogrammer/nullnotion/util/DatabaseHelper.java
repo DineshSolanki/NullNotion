@@ -1,4 +1,4 @@
-package com.abstractprogrammer.nullnotion.Util;
+package com.abstractprogrammer.nullnotion.util;
 
 import com.abstractprogrammer.nullnotion.component.ConnectionSettings;
 import com.intellij.openapi.project.Project;
@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class DatabaseHelper {
-    public static Optional<Connection> getDatabaseDriver(Project project) throws ClassNotFoundException, SQLException {
+    public static Optional<Connection> getDatabaseDriver(Project project) throws SQLException {
         ConnectionSettings connectionSettings = project.getService(ConnectionSettings.class);
         String connectionString;
         ConnectionSettings.State settingsState = connectionSettings.getState();

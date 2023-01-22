@@ -1,12 +1,10 @@
 package com.abstractprogrammer.nullnotion.actions;
 
-import com.abstractprogrammer.nullnotion.Util.AnnotationHelper;
+import com.abstractprogrammer.nullnotion.util.AnnotationHelper;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.application.Application;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
@@ -24,7 +22,7 @@ public class ProcessNullNotionAction extends AnAction {
     private final Logger logger = Logger.getInstance(getClass());
     PsiClass selectedClass;
     PsiJavaFile psiJavaFile;
-    AnnotationHelper annotationHelper = new AnnotationHelper();
+    final AnnotationHelper annotationHelper = new AnnotationHelper();
 
     @Override
     public void update(@NotNull AnActionEvent e) {
