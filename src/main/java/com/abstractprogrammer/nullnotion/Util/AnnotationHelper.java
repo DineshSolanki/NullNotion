@@ -1,5 +1,6 @@
 package com.abstractprogrammer.nullnotion.Util;
 
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
@@ -63,42 +64,49 @@ public class AnnotationHelper {
     private static void saveDocument(Project project, PsiJavaFile psiJavaFile) {
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
         Document document = psiDocumentManager.getDocument(psiJavaFile);
-        if (psiDocumentManager.hasUncommitedDocuments() && document != null) {
-            WriteCommandAction.runWriteCommandAction(project, () ->
-                    psiDocumentManager.doPostponedOperationsAndUnblockDocument(document));
-            psiDocumentManager.commitDocument(document);
+        if (document != null && psiDocumentManager.isDocumentBlockedByPsi(document)) {
+            WriteCommandAction.runWriteCommandAction(project, () -> {
+                psiDocumentManager.doPostponedOperationsAndUnblockDocument(document);
+                psiDocumentManager.commitDocument(document);
+            });
         }
     }
-
+    
     private void processTable(Project project, PsiClass selectedClass, String tableName,
                               PsiElementFactory elementFactory, @NotNull DatabaseMetaData metaData) throws SQLException {
         ResultSet resultSet = metaData.getTables(null, null, tableName, null);
         while (resultSet.next()) {
-            //iterate through fields of the class
-            for (PsiField field : selectedClass.getFields()) {
-                String fieldName = field.getName();
-                PsiAnnotation fieldAnnotation = field.getAnnotation(COLUMN_ANNOTATION);
-                if (fieldAnnotation != null) {
-                    fieldName = getNameFromAnnotation(fieldAnnotation);
-                } else {
-                    fieldAnnotation = field.getAnnotation(JOIN_COLUMN_ANNOTATION);
-                    if (fieldAnnotation != null) {
-                        fieldName = getNameFromAnnotation(fieldAnnotation);
+            ReadAction.run(() -> {
+                for (PsiField field : selectedClass.getFields()) {
+                    String fieldName = getFieldName(field);
+                    ResultSet columnInfo = metaData.getColumns(null, null, tableName, fieldName);
+                    if (columnInfo.next()) {
+                        String isNullable = columnInfo.getString("IS_NULLABLE");
+                        PsiAnnotation annotation;
+                        if (isNullable.equals("NO")) {
+                            annotation = elementFactory.createAnnotationFromText("@NonNull", field);
+                        } else {
+                            annotation = elementFactory.createAnnotationFromText("@Nullable", field);
+                        }
+                        addAnnotation(project, field, annotation);
                     }
                 }
-                ResultSet columnInfo = metaData.getColumns(null, null, tableName, fieldName);
-                if (columnInfo.next()) {
-                    String isNullable = columnInfo.getString("IS_NULLABLE");
-                    PsiAnnotation annotation;
-                    if (isNullable.equals("NO")) {
-                        annotation = elementFactory.createAnnotationFromText("@NonNull", field);
-                    } else {
-                        annotation = elementFactory.createAnnotationFromText("@Nullable", field);
-                    }
-                    addAnnotation(project, field, annotation);
-                }
+            });
+        }
+    }
+
+    private static String getFieldName(@NotNull PsiField field) {
+        String fieldName = field.getName();
+        PsiAnnotation fieldAnnotation = field.getAnnotation(COLUMN_ANNOTATION);
+        if (fieldAnnotation != null) {
+            fieldName = getNameFromAnnotation(fieldAnnotation);
+        } else {
+            fieldAnnotation = field.getAnnotation(JOIN_COLUMN_ANNOTATION);
+            if (fieldAnnotation != null) {
+                fieldName = getNameFromAnnotation(fieldAnnotation);
             }
         }
+        return fieldName;
     }
 
     private static void addAnnotation(Project project, @NotNull PsiField field, PsiAnnotation annotation) {
@@ -117,7 +125,7 @@ public class AnnotationHelper {
     }
 
 
-    private String getNameFromAnnotation(PsiAnnotation annotation) {
+    private static String getNameFromAnnotation(PsiAnnotation annotation) {
         String stringValue = "";
         if (annotation != null) {
             PsiAnnotationMemberValue nameValuePair = annotation.findDeclaredAttributeValue("name");

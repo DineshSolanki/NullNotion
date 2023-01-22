@@ -28,7 +28,6 @@ public class ProcessNullNotionAction extends AnAction {
 
     @Override
     public void update(@NotNull AnActionEvent e) {
-        Application application = ApplicationManager.getApplication();
         Presentation presentation = e.getPresentation();
         try {
             logger.info("Update method called");
