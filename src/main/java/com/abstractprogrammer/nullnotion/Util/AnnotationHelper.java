@@ -44,62 +44,62 @@ public class AnnotationHelper {
                 Messages.showErrorDialog(project, "Could not create connection", "Connection Error");
                 return;
             }
-            Connection connection = connectionOptional.get();
-            DatabaseMetaData metaData = connection.getMetaData();
-            ResultSet resultSet = metaData.getTables(null, null, entityClassName, null);
-            while (resultSet.next()) {
-                String tableName = resultSet.getString("TABLE_NAME");
-                //iterate through fields of the class
-                for (PsiField field : selectedClass.getFields()) {
-                    String fieldName = field.getName();
-                    PsiAnnotation fieldAnnotation = field.getAnnotation(COLUMN_ANNOTATION);
-                    if (fieldAnnotation != null) {
-                        fieldName = getNameFromAnnotation(fieldAnnotation);
-                    } else {
-                        fieldAnnotation = field.getAnnotation(JOIN_COLUMN_ANNOTATION);
+            try (Connection connection = connectionOptional.get()) {
+                DatabaseMetaData metaData = connection.getMetaData();
+                ResultSet resultSet = metaData.getTables(null, null, entityClassName, null);
+                while (resultSet.next()) {
+                    String tableName = resultSet.getString("TABLE_NAME");
+                    //iterate through fields of the class
+                    for (PsiField field : selectedClass.getFields()) {
+                        String fieldName = field.getName();
+                        PsiAnnotation fieldAnnotation = field.getAnnotation(COLUMN_ANNOTATION);
                         if (fieldAnnotation != null) {
                             fieldName = getNameFromAnnotation(fieldAnnotation);
-                        }
-                    }
-                    ResultSet columnInfo = metaData.getColumns(null, null, tableName, fieldName);
-                    if (columnInfo.next()) {
-                        String isNullable = columnInfo.getString("IS_NULLABLE");
-                        PsiAnnotation annotation;
-                        if (isNullable.equals("NO")) {
-                            annotation = elementFactory.createAnnotationFromText("@NonNull", field);
                         } else {
-                            annotation = elementFactory.createAnnotationFromText("@Nullable", field);
+                            fieldAnnotation = field.getAnnotation(JOIN_COLUMN_ANNOTATION);
+                            if (fieldAnnotation != null) {
+                                fieldName = getNameFromAnnotation(fieldAnnotation);
+                            }
                         }
-                        // add the annotation to the field
-                        WriteCommandAction.runWriteCommandAction(project, () -> {
-                            field.getModifierList().addAfter(annotation, null);
-                        });
+                        ResultSet columnInfo = metaData.getColumns(null, null, tableName, fieldName);
+                        if (columnInfo.next()) {
+                            String isNullable = columnInfo.getString("IS_NULLABLE");
+                            PsiAnnotation annotation;
+                            if (isNullable.equals("NO")) {
+                                annotation = elementFactory.createAnnotationFromText("@NonNull", field);
+                            } else {
+                                annotation = elementFactory.createAnnotationFromText("@Nullable", field);
+                            }
+                            // add the annotation to the field
+                            WriteCommandAction.runWriteCommandAction(project, () -> {
+                                field.getModifierList().addAfter(annotation, null);
+                            });
+                        }
                     }
                 }
+                // Import the "org.springframework.lang.Nullable" annotation
+                PsiImportStatement nullableImport = elementFactory.createImportStatement(psiFacade.findClass(NULLABLE_IMPORT, GlobalSearchScope.allScope(project)));
+                // Import the "org.springframework.lang.NonNull" annotation
+                PsiImportStatement nonNullImport = elementFactory.createImportStatement(psiFacade.findClass(NON_NULL_IMPORT, GlobalSearchScope.allScope(project)));
+                PsiImportList importList = psiJavaFile.getImportList();
+                PsiElement lastImport = importList.getLastChild();
+                if (Arrays.stream(importList.getImportStatements()).noneMatch(importStatement -> importStatement.getQualifiedName().equals(NULLABLE_IMPORT))) {
+                    WriteCommandAction.runWriteCommandAction(project, () -> {
+                        importList.addAfter(nullableImport, lastImport);
+                    });
+                }
+                if (Arrays.stream(importList.getImportStatements()).noneMatch(importStatement -> importStatement.getQualifiedName().equals(NON_NULL_IMPORT))) {
+                    WriteCommandAction.runWriteCommandAction(project, () -> {
+                        importList.addAfter(nonNullImport, lastImport);
+    //                    psiJavaFile.addAfter(nonNullImport,lastImport);
+                    });
+                }
+                // get the document from the editor
+                Document document = PsiDocumentManager.getInstance(project).getDocument(psiJavaFile);
+                // save the changes
+                WriteCommandAction.runWriteCommandAction(project, () -> PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document));
+                PsiDocumentManager.getInstance(project).commitDocument(document);
             }
-            // Import the "org.springframework.lang.Nullable" annotation
-            PsiImportStatement nullableImport = elementFactory.createImportStatement(psiFacade.findClass(NULLABLE_IMPORT, GlobalSearchScope.allScope(project)));
-            // Import the "org.springframework.lang.NonNull" annotation
-            PsiImportStatement nonNullImport = elementFactory.createImportStatement(psiFacade.findClass(NON_NULL_IMPORT, GlobalSearchScope.allScope(project)));
-            PsiImportList importList = psiJavaFile.getImportList();
-            PsiElement lastImport = importList.getLastChild();
-            if (Arrays.stream(importList.getImportStatements()).noneMatch(importStatement -> importStatement.getQualifiedName().equals(NULLABLE_IMPORT))) {
-                WriteCommandAction.runWriteCommandAction(project, () -> {
-                    importList.addAfter(nullableImport, lastImport);
-                });
-            }
-            if (Arrays.stream(importList.getImportStatements()).noneMatch(importStatement -> importStatement.getQualifiedName().equals(NON_NULL_IMPORT))) {
-                WriteCommandAction.runWriteCommandAction(project, () -> {
-                    importList.addAfter(nonNullImport, lastImport);
-//                    psiJavaFile.addAfter(nonNullImport,lastImport);
-                });
-            }
-            // get the document from the editor
-            Document document = PsiDocumentManager.getInstance(project).getDocument(psiJavaFile);
-            // save the changes
-            WriteCommandAction.runWriteCommandAction(project, () -> PsiDocumentManager.getInstance(project).doPostponedOperationsAndUnblockDocument(document));
-            PsiDocumentManager.getInstance(project).commitDocument(document);
-            connection.close();
             Messages.showInfoMessage(project, "Null Notion processing complete", "Success");
         } catch (IllegalArgumentException | SQLException | ClassNotFoundException ex) {
             logger.error(ex);
