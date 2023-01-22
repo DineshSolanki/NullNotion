@@ -17,6 +17,7 @@ public class DatabaseHelper {
         @Nullable String connectionString;
         if (connectionSettings.getState().connectionString == null) {
             connectionString = Messages.showInputDialog(project, "Please enter the connection string for the database:", "Connection String", Messages.getQuestionIcon());
+            connectionString = CommonUtil.sanitize(connectionString);
             connectionSettings.getState().connectionString = connectionString;
         } else {
             connectionString = connectionSettings.getState().connectionString;
