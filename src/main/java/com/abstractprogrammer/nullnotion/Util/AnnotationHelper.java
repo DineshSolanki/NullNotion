@@ -74,24 +74,23 @@ public class AnnotationHelper {
     
     private void processTable(Project project, PsiClass selectedClass, String tableName,
                               PsiElementFactory elementFactory, @NotNull DatabaseMetaData metaData) throws SQLException {
-        ResultSet resultSet = metaData.getTables(null, null, tableName, null);
-        while (resultSet.next()) {
-            ReadAction.run(() -> {
-                for (PsiField field : selectedClass.getFields()) {
-                    String fieldName = getFieldName(field);
-                    ResultSet columnInfo = metaData.getColumns(null, null, tableName, fieldName);
-                    if (columnInfo.next()) {
-                        String isNullable = columnInfo.getString("IS_NULLABLE");
-                        PsiAnnotation annotation;
-                        if (isNullable.equals("NO")) {
-                            annotation = elementFactory.createAnnotationFromText("@NonNull", field);
-                        } else {
-                            annotation = elementFactory.createAnnotationFromText("@Nullable", field);
+        try (ResultSet resultSet = metaData.getTables(null, null, tableName, null)) {
+            if (resultSet.next()) {
+                ReadAction.run(() -> {
+                    for (PsiField field : selectedClass.getFields()) {
+                        String fieldName = getFieldName(field);
+                        try (ResultSet columnInfo = metaData.getColumns(null, null, tableName, fieldName)) {
+                            if (columnInfo.next()) {
+                                String isNullable = columnInfo.getString("IS_NULLABLE");
+                                PsiAnnotation annotation = isNullable.equals("NO") ? 
+                                        elementFactory.createAnnotationFromText("@NonNull", field) 
+                                        : elementFactory.createAnnotationFromText("@Nullable", field);
+                                addAnnotation(project, field, annotation);
+                            }
                         }
-                        addAnnotation(project, field, annotation);
                     }
-                }
-            });
+                });
+            }
         }
     }
 
