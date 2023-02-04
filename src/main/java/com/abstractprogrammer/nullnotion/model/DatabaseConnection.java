@@ -5,7 +5,7 @@ import com.abstractprogrammer.nullnotion.enums.DatabaseType;
 public class DatabaseConnection {
     private String connectionString;
     private DatabaseType databaseType;
-    
+
     public DatabaseConnection(String connectionString, DatabaseType databaseName) {
         this.connectionString = connectionString;
         this.databaseType = databaseName;
