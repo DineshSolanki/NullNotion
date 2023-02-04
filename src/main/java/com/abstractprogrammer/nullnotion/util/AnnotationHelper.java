@@ -132,7 +132,11 @@ public class AnnotationHelper {
                 columnInfo.put(columnName, isNullable);
             }
             ReadAction.run(() -> {
-                for (PsiField field : selectedClass.getFields()) {
+                List<PsiField> columnFields = Arrays.stream(selectedClass.getFields())
+                        .filter(psiField -> 
+                                psiField.hasAnnotation(COLUMN_ANNOTATION) || psiField.hasAnnotation(JOIN_COLUMN_ANNOTATION))
+                        .collect(Collectors.toList());
+                for (PsiField field : columnFields) {
                     String fieldName = getFieldName(field);
                     if (columnInfo.containsKey(fieldName)) {
                         String isNullable = columnInfo.get(fieldName);
