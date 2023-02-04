@@ -1,6 +1,8 @@
 package com.abstractprogrammer.nullnotion.util;
 
 import com.abstractprogrammer.nullnotion.component.ConnectionSettings;
+import com.abstractprogrammer.nullnotion.enums.DatabaseType;
+import com.abstractprogrammer.nullnotion.model.DatabaseConnection;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import org.apache.commons.lang.StringUtils;
@@ -11,56 +13,54 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class DatabaseHelper {
-    public static Optional<Connection> getDatabaseDriver(Project project) throws SQLException {
+    public static Optional<DatabaseConnection> getConnectionProperties(Project project) {
         ConnectionSettings connectionSettings = project.getService(ConnectionSettings.class);
         String connectionString;
         ConnectionSettings.State settingsState = connectionSettings.getState();
         if (settingsState != null) {
-            if (settingsState.connectionString == null) {
-                connectionString = Messages.showInputDialog(project, "Please enter the connection string for the database:", "Connection String", Messages.getQuestionIcon());
-                connectionString = CommonUtil.sanitize(connectionString);
-                settingsState.connectionString = connectionString;
-            } else {
+            if (settingsState.connectionString != null) {
                 connectionString = settingsState.connectionString;
-            }
-            String JDBC_DRIVER = null;
-            if (settingsState.databaseName != null) {
-                JDBC_DRIVER = settingsState.databaseName;
             } else {
-                String[] options = {"MySQL", "PostgreSQL", "Oracle", "MSSQL"};
-                String selectedOption = Messages.showEditableChooseDialog("Please select the database type:", "Database Type", Messages.getQuestionIcon(), options, options[0], null);
-                String CONNECTION_TEMPLATE;
-                if (selectedOption != null) {
-                    switch (selectedOption) {
-                        case "MySQL":
-                            JDBC_DRIVER = "com.mysql.jdbc.Driver";
-                            CONNECTION_TEMPLATE = "jdbc:mysql://<hostname>:<port>/<database>?user=<username>&password=<password>";
-                            break;
-                        case "PostgreSQL":
-                            JDBC_DRIVER = "org.postgresql.Driver";
-                            CONNECTION_TEMPLATE = "jdbc:postgresql://<hostname>:<port>/<database>?user=<username>&password=<password>";
-                            break;
-                        case "Oracle":
-                            JDBC_DRIVER = "oracle.jdbc.OracleDriver";
-                            CONNECTION_TEMPLATE = "jdbc:oracle:thin:@<hostname>:<port>:<SID>";
-                            break;
-                        default:
-                            JDBC_DRIVER = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
-                            CONNECTION_TEMPLATE = "jdbc:sqlserver://<hostname>:<port>;database=<database>;user=<username>;password=<password>";
-                            break;
-                    }
-                    settingsState.databaseName = JDBC_DRIVER;
+                connectionString = Messages.showInputDialog(project, "Please enter the connection string for the database:", "Connection String", Messages.getQuestionIcon());
+                if (StringUtils.isBlank(connectionString)) {
+                    return Optional.empty();
                 }
             }
-            if (StringUtils.isNotBlank(connectionString) && StringUtils.isNotBlank(JDBC_DRIVER)) {
-                try {
-                    Class.forName(JDBC_DRIVER);
-                } catch (ClassNotFoundException e) {
-                    settingsState.databaseName = null;
+            String selectedOption;
+            if (settingsState.databaseName != null) {
+                selectedOption = settingsState.databaseName;
+            } else {
+                String[] options = DatabaseType.getValues();
+                selectedOption = Messages.showEditableChooseDialog("Please select the database type:", "Database Type", Messages.getQuestionIcon(), options, options[0], null);
+                if (StringUtils.isBlank(selectedOption)) {
+                    return Optional.empty();
                 }
-                return Optional.of(DriverManager.getConnection(connectionString));
             }
+            DatabaseConnection databaseConnection = new DatabaseConnection(connectionString, DatabaseType.valueOf(selectedOption));
+            return Optional.of(databaseConnection);
         }
         return Optional.empty();
+    }
+
+    public static Optional<Connection> getDatabaseDriver(Project project, DatabaseConnection databaseConnection) throws SQLException {
+        ConnectionSettings connectionSettings = project.getService(ConnectionSettings.class);
+        ConnectionSettings.State settingsState = connectionSettings.getState();
+
+        String connectionString = databaseConnection.getConnectionString();
+        DatabaseType selectedOption = databaseConnection.getDatabaseType();
+        try {
+            Class.forName(selectedOption.getDriver());
+        } catch (ClassNotFoundException e) {
+            if (settingsState != null) {
+                settingsState.connectionString = null;
+                settingsState.databaseName = null;
+            }
+            return Optional.empty();
+        }
+        if (settingsState != null) {
+            settingsState.connectionString = connectionString;
+            settingsState.databaseName = selectedOption.name();
+        }
+        return Optional.of(DriverManager.getConnection(connectionString));
     }
 }
