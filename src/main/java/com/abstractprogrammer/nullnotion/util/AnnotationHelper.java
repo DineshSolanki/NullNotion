@@ -180,15 +180,23 @@ public class AnnotationHelper {
         if (annotation != null) {
             PsiAnnotationMemberValue nameValuePair = annotation.findDeclaredAttributeValue("name");
             if (nameValuePair != null) {
+                //check if it's a literal
                 if (nameValuePair instanceof PsiLiteralExpression) {
                     Object value = ((PsiLiteralExpression) nameValuePair).getValue();
                     if (value != null) {
-                        stringValue = value.toString().replaceAll("\"", "");
+                        stringValue = value.toString();
+                    }
+                }
+                //or reference to a constant
+                else if (nameValuePair instanceof PsiReferenceExpression) {
+                    PsiElement qualifier = ((PsiReferenceExpression) nameValuePair).getQualifier();
+                    if (qualifier != null) {
+                        stringValue = qualifier.getText();
                     }
                 }
             }
         }
-        return stringValue;
+        return stringValue.replaceAll("\"", "");
     }
 
     private void importAnnotations(Project project, @NotNull PsiJavaFile psiJavaFile) {
