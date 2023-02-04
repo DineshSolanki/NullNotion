@@ -2,11 +2,9 @@ package com.abstractprogrammer.nullnotion.util;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
-import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
@@ -26,19 +24,21 @@ import com.intellij.psi.PsiImportStatement;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiLiteralExpression;
 import com.intellij.psi.PsiModifierList;
+import com.intellij.psi.PsiReferenceExpression;
 import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 public class AnnotationHelper {
@@ -90,6 +90,11 @@ public class AnnotationHelper {
         });
     }
 
+    /**
+     * save the document if it is modified
+     * @param project the project
+     * @param psiJavaFile the file to save
+     */
     private static void saveDocument(Project project, PsiJavaFile psiJavaFile) {
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
         Document document = psiDocumentManager.getDocument(psiJavaFile);
@@ -100,30 +105,19 @@ public class AnnotationHelper {
             });
         }
     }
-    
-//    private void processTable(Project project, PsiClass selectedClass, String tableName,
-//                              PsiElementFactory elementFactory, @NotNull DatabaseMetaData metaData) throws SQLException {
-//        try (ResultSet resultSet = metaData.getTables(null, null, tableName, null)) {
-//            if (resultSet.next()) {
-//                ReadAction.run(() -> {
-//                    for (PsiField field : selectedClass.getFields()) {
-//                        String fieldName = getFieldName(field);
-//                        try (ResultSet columnInfo = metaData.getColumns(null, null, tableName, fieldName)) {
-//                            if (columnInfo.next()) {
-//                                String isNullable = columnInfo.getString("IS_NULLABLE");
-//                                PsiAnnotation annotation = isNullable.equals("NO") ? 
-//                                        elementFactory.createAnnotationFromText("@NonNull", field) 
-//                                        : elementFactory.createAnnotationFromText("@Nullable", field);
-//                                addAnnotation(project, field, annotation);
-//                            }
-//                        }
-//                    }
-//                });
-//            }
-//        }
-//    }
+
+    /**
+     * process the table and add the annotations to the class
+     * @param project the project
+     * @param selectedClass the class to process
+     * @param tableName the name of the table
+     * @param elementFactory the element factory
+     * @param metaData the database metadata
+     * @throws SQLException if there is an error retrieving the database metadata
+     */
     private void processTable(Project project, PsiClass selectedClass, String tableName,
                               PsiElementFactory elementFactory, @NotNull DatabaseMetaData metaData) throws SQLException {
+        
         try (ResultSet resultSet = metaData.getColumns(null, null, tableName, null)) {
             Map<String, String> columnInfo = new HashMap<>();
             while (resultSet.next()) {
@@ -150,7 +144,11 @@ public class AnnotationHelper {
         }
     }
 
-
+    /**
+     * gets the name of the field from the annotation
+     * @param field the field to get the name from
+     * @return the name of the field
+     */
     private static String getFieldName(@NotNull PsiField field) {
         String fieldName = field.getName();
         PsiAnnotation fieldAnnotation = field.getAnnotation(COLUMN_ANNOTATION);
@@ -165,6 +163,12 @@ public class AnnotationHelper {
         return fieldName;
     }
 
+    /**
+     * Adds the annotation to the field if it does not already exist
+     * @param project the project
+     * @param field the field to add the annotation to
+     * @param annotation the annotation to add
+     */
     private static void addAnnotation(Project project, @NotNull PsiField field, PsiAnnotation annotation) {
         PsiModifierList modifierList = field.getModifierList();
         if (modifierList != null) {
@@ -178,7 +182,11 @@ public class AnnotationHelper {
         }
     }
 
-
+    /**
+     * Extracts the name attribute from the annotation
+     * @param annotation the annotation to extract the name from
+     * @return the name attribute value
+     */
     private static String getNameFromAnnotation(PsiAnnotation annotation) {
         String stringValue = "";
         if (annotation != null) {
@@ -203,6 +211,11 @@ public class AnnotationHelper {
         return stringValue.replaceAll("\"", "");
     }
 
+    /**
+     * Imports the javax.annotation.Nullable and javax.annotation.Nonnull annotations
+     * @param project the project
+     * @param psiJavaFile the file to import the annotations into
+     */
     private void importAnnotations(Project project, @NotNull PsiJavaFile psiJavaFile) {
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
         PsiImportStatement nullableImport = ReadAction.compute(()-> elementFactory.createImportStatement(findClass(NULLABLE_IMPORT, project)));
@@ -226,6 +239,12 @@ public class AnnotationHelper {
         }
     }
 
+    /**
+     * find a class by its fully qualified name
+     * @param className fully qualified name
+     * @param project current project
+     * @return the class or null if not found
+     */
     private PsiClass findClass(String className, Project project) {
         GlobalSearchScope scope = GlobalSearchScope.allScope(project);
         return ReadAction.compute(() -> JavaPsiFacade.getInstance(project).findClass(className, scope));
