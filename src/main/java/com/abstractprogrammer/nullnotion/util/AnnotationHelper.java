@@ -46,10 +46,11 @@ public class AnnotationHelper {
     private static final String COLUMN_ANNOTATION = "javax.persistence.Column";
     private static final String TABLE_ANNOTATION = "javax.persistence.Table";
     private static final String JOIN_COLUMN_ANNOTATION = "javax.persistence.JoinColumn";
-    public static final String NULLABLE_IMPORT = "org.springframework.lang.Nullable";
-    public static final String NON_NULL_IMPORT = "org.springframework.lang.NonNull";
-
+    private static final String NULLABLE_IMPORT = "org.springframework.lang.Nullable";
+    private static final String NON_NULL_IMPORT = "org.springframework.lang.NonNull";
+    private Project project;
     public void processAnnotations(Project project, PsiJavaFile psiJavaFile, PsiClass selectedClass) {
+        this.project = project;
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Processing null notion annotations", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
@@ -73,13 +74,13 @@ public class AnnotationHelper {
                         DatabaseMetaData metaData = connection.getMetaData();
                         indicator.setFraction(0.4);
                         indicator.setText("Processing class " + entityClassName);
-                        processTable(project, selectedClass, entityClassName, elementFactory, metaData);
+                        processTable(selectedClass, entityClassName, elementFactory, metaData);
                         indicator.setFraction(0.6);
                         indicator.setText("Importing annotations");
-                        importAnnotations(project, psiJavaFile);
+                        importAnnotations(psiJavaFile);
                         indicator.setFraction(0.8);
                         indicator.setText("Saving file");
-                        saveDocument(project, psiJavaFile);
+                        saveDocument(psiJavaFile);
                     }
                     ApplicationManager.getApplication().invokeLater(() -> Messages.showInfoMessage(project, "Null Notion processing complete", "Success"));
                 } catch (IllegalArgumentException | SQLException ex) {
@@ -92,10 +93,10 @@ public class AnnotationHelper {
 
     /**
      * save the document if it is modified
-     * @param project the project
+     *
      * @param psiJavaFile the file to save
      */
-    private static void saveDocument(Project project, PsiJavaFile psiJavaFile) {
+    private void saveDocument(PsiJavaFile psiJavaFile) {
         PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
         Document document = psiDocumentManager.getDocument(psiJavaFile);
         if (document != null && psiDocumentManager.isDocumentBlockedByPsi(document)) {
@@ -108,14 +109,14 @@ public class AnnotationHelper {
 
     /**
      * process the table and add the annotations to the class
-     * @param project the project
-     * @param selectedClass the class to process
-     * @param tableName the name of the table
+     *
+     * @param selectedClass  the class to process
+     * @param tableName      the name of the table
      * @param elementFactory the element factory
-     * @param metaData the database metadata
+     * @param metaData       the database metadata
      * @throws SQLException if there is an error retrieving the database metadata
      */
-    private void processTable(Project project, PsiClass selectedClass, String tableName,
+    private void processTable(PsiClass selectedClass, String tableName,
                               PsiElementFactory elementFactory, @NotNull DatabaseMetaData metaData) throws SQLException {
         
         try (ResultSet resultSet = metaData.getColumns(null, null, tableName, null)) {
@@ -137,7 +138,7 @@ public class AnnotationHelper {
                         PsiAnnotation annotation = isNullable.equals("NO") ?
                                 elementFactory.createAnnotationFromText("@NonNull", field)
                                 : elementFactory.createAnnotationFromText("@Nullable", field);
-                        addAnnotation(project, field, annotation);
+                        addAnnotation(field, annotation);
                     }
                 }
             });
@@ -165,11 +166,11 @@ public class AnnotationHelper {
 
     /**
      * Adds the annotation to the field if it does not already exist
-     * @param project the project
-     * @param field the field to add the annotation to
+     *
+     * @param field      the field to add the annotation to
      * @param annotation the annotation to add
      */
-    private static void addAnnotation(Project project, @NotNull PsiField field, PsiAnnotation annotation) {
+    private void addAnnotation(@NotNull PsiField field, PsiAnnotation annotation) {
         PsiModifierList modifierList = field.getModifierList();
         if (modifierList != null) {
             String qualifiedName = annotation.getQualifiedName();
@@ -213,13 +214,13 @@ public class AnnotationHelper {
 
     /**
      * Imports the javax.annotation.Nullable and javax.annotation.Nonnull annotations
-     * @param project the project
+     *
      * @param psiJavaFile the file to import the annotations into
      */
-    private void importAnnotations(Project project, @NotNull PsiJavaFile psiJavaFile) {
+    private void importAnnotations(@NotNull PsiJavaFile psiJavaFile) {
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
-        PsiImportStatement nullableImport = ReadAction.compute(()-> elementFactory.createImportStatement(findClass(NULLABLE_IMPORT, project)));
-        PsiImportStatement nonNullImport = ReadAction.compute(()-> elementFactory.createImportStatement(findClass(NON_NULL_IMPORT, project)));
+        PsiImportStatement nullableImport = ReadAction.compute(()-> elementFactory.createImportStatement(findClass(NULLABLE_IMPORT)));
+        PsiImportStatement nonNullImport = ReadAction.compute(()-> elementFactory.createImportStatement(findClass(NON_NULL_IMPORT)));
         PsiImportList importList = ReadAction.compute(psiJavaFile::getImportList);
         if (importList != null) {
             PsiElement lastImport = ReadAction.compute(importList::getLastChild);
@@ -241,11 +242,11 @@ public class AnnotationHelper {
 
     /**
      * find a class by its fully qualified name
+     *
      * @param className fully qualified name
-     * @param project current project
      * @return the class or null if not found
      */
-    private PsiClass findClass(String className, Project project) {
+    private PsiClass findClass(String className) {
         GlobalSearchScope scope = GlobalSearchScope.allScope(project);
         return ReadAction.compute(() -> JavaPsiFacade.getInstance(project).findClass(className, scope));
     }
