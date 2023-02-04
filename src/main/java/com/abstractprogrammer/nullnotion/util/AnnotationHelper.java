@@ -1,5 +1,6 @@
 package com.abstractprogrammer.nullnotion.util;
 
+import com.abstractprogrammer.nullnotion.model.DatabaseConnection;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.command.WriteCommandAction;
@@ -51,6 +52,12 @@ public class AnnotationHelper {
     private Project project;
     public void processAnnotations(Project project, PsiJavaFile psiJavaFile, PsiClass selectedClass) {
         this.project = project;
+        Optional<DatabaseConnection> connectionProperties = DatabaseHelper.getConnectionProperties(project);
+        if (connectionProperties.isEmpty()) {
+            Messages.showErrorDialog(project, "No database connection properties found", "Connection Error");
+            return;
+        }
+        DatabaseConnection databaseConnection = connectionProperties.get();
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Processing null notion annotations", true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
@@ -65,15 +72,19 @@ public class AnnotationHelper {
                 try {
                     indicator.setFraction(0.2);
                     indicator.setText("Retrieving database schema");
-                    Optional<Connection> connectionOptional = DatabaseHelper.getDatabaseDriver(project);
+                    Optional<Connection> connectionOptional = DatabaseHelper.getDatabaseDriver(project, databaseConnection);
+                    indicator.checkCanceled();
                     if (connectionOptional.isEmpty()) {
-                        Messages.showErrorDialog(project, "Could not create connection", "Connection Error");
+                        ApplicationManager.getApplication().invokeAndWait(() -> 
+                                Messages.showErrorDialog(project,
+                                        "Could not create connection",
+                                        "Connection Error"));
                         return;
                     }
                     try (Connection connection = connectionOptional.get()) {
                         DatabaseMetaData metaData = connection.getMetaData();
                         indicator.setFraction(0.4);
-                        indicator.setText("Processing class " + entityClassName);
+                        indicator.setText(String.format("Processing class %s (%s)", selectedClass.getName(),entityClassName));
                         processTable(selectedClass, entityClassName, elementFactory, metaData);
                         indicator.setFraction(0.6);
                         indicator.setText("Importing annotations");
@@ -85,7 +96,7 @@ public class AnnotationHelper {
                     ApplicationManager.getApplication().invokeLater(() -> Messages.showInfoMessage(project, "Null Notion processing complete", "Success"));
                 } catch (IllegalArgumentException | SQLException ex) {
                     logger.error(ex);
-                    Messages.showErrorDialog(project, ex.getMessage(), "Error");
+                    ApplicationManager.getApplication().invokeLater(() -> Messages.showErrorDialog(project, ex.getMessage(), "Error"));
                 }
             }
         });
