@@ -50,12 +50,12 @@ public class ProcessNullNotionAction extends AnAction {
     }
 
     /**
-
-     Determines if the action should be enabled based on the given project and selected file.
-     also sets the selectedClass and psiJavaFile fields
-     @param project the current project
-     @param selectedFile the currently selected file
-     @return true if the action should be enabled, false otherwise
+     * Determines if the action should be enabled based on the given project and selected file.
+     * also sets the selectedClass and psiJavaFile fields
+     *
+     * @param project      the current project
+     * @param selectedFile the currently selected file
+     * @return true if the action should be enabled, false otherwise
      */
     private boolean shouldEnableAction(Project project, VirtualFile selectedFile) {
         boolean isEnable = true;

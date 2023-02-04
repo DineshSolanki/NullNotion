@@ -50,6 +50,7 @@ public class AnnotationHelper {
     private static final String NULLABLE_IMPORT = "org.springframework.lang.Nullable";
     private static final String NON_NULL_IMPORT = "org.springframework.lang.NonNull";
     private Project project;
+
     public void processAnnotations(Project project, PsiJavaFile psiJavaFile, PsiClass selectedClass) {
         this.project = project;
         Optional<DatabaseConnection> connectionProperties = DatabaseHelper.getConnectionProperties(project);
@@ -66,7 +67,7 @@ public class AnnotationHelper {
                 indicator.setFraction(0);
                 indicator.setText("Scanning class");
 
-                String entityClassName = ReadAction.compute(()->getNameFromAnnotation(selectedClass.getAnnotation(TABLE_ANNOTATION)));
+                String entityClassName = ReadAction.compute(() -> getNameFromAnnotation(selectedClass.getAnnotation(TABLE_ANNOTATION)));
                 PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
                 //establish a connection to the database and retrieve the schema
                 try {
@@ -75,7 +76,7 @@ public class AnnotationHelper {
                     Optional<Connection> connectionOptional = DatabaseHelper.getDatabaseDriver(project, databaseConnection);
                     indicator.checkCanceled();
                     if (connectionOptional.isEmpty()) {
-                        ApplicationManager.getApplication().invokeAndWait(() -> 
+                        ApplicationManager.getApplication().invokeAndWait(() ->
                                 Messages.showErrorDialog(project,
                                         "Could not create connection",
                                         "Connection Error"));
@@ -84,7 +85,7 @@ public class AnnotationHelper {
                     try (Connection connection = connectionOptional.get()) {
                         DatabaseMetaData metaData = connection.getMetaData();
                         indicator.setFraction(0.4);
-                        indicator.setText(String.format("Processing class %s (%s)", selectedClass.getName(),entityClassName));
+                        indicator.setText(String.format("Processing class %s (%s)", selectedClass.getName(), entityClassName));
                         processTable(selectedClass, entityClassName, elementFactory, metaData);
                         indicator.setFraction(0.6);
                         indicator.setText("Importing annotations");
@@ -129,7 +130,7 @@ public class AnnotationHelper {
      */
     private void processTable(PsiClass selectedClass, String tableName,
                               PsiElementFactory elementFactory, @NotNull DatabaseMetaData metaData) throws SQLException {
-        
+
         try (ResultSet resultSet = metaData.getColumns(null, null, tableName, null)) {
             Map<String, String> columnInfo = new HashMap<>();
             while (resultSet.next()) {
@@ -139,7 +140,7 @@ public class AnnotationHelper {
             }
             ReadAction.run(() -> {
                 List<PsiField> columnFields = Arrays.stream(selectedClass.getFields())
-                        .filter(psiField -> 
+                        .filter(psiField ->
                                 psiField.hasAnnotation(COLUMN_ANNOTATION) || psiField.hasAnnotation(JOIN_COLUMN_ANNOTATION))
                         .collect(Collectors.toList());
                 for (PsiField field : columnFields) {
@@ -158,6 +159,7 @@ public class AnnotationHelper {
 
     /**
      * gets the name of the field from the annotation
+     *
      * @param field the field to get the name from
      * @return the name of the field
      */
@@ -188,7 +190,7 @@ public class AnnotationHelper {
             if (qualifiedName != null) {
                 boolean existingAnnotation = modifierList.hasAnnotation(qualifiedName);
                 if (!existingAnnotation) {
-                    ApplicationManager.getApplication().invokeLater(() -> WriteCommandAction.runWriteCommandAction(project, (Computable<PsiElement>) ()->modifierList.addAfter(annotation, null)));
+                    ApplicationManager.getApplication().invokeLater(() -> WriteCommandAction.runWriteCommandAction(project, (Computable<PsiElement>) () -> modifierList.addAfter(annotation, null)));
                 }
             }
         }
@@ -196,6 +198,7 @@ public class AnnotationHelper {
 
     /**
      * Extracts the name attribute from the annotation
+     *
      * @param annotation the annotation to extract the name from
      * @return the name attribute value
      */
@@ -230,8 +233,9 @@ public class AnnotationHelper {
      */
     private void importAnnotations(@NotNull PsiJavaFile psiJavaFile) {
         PsiElementFactory elementFactory = JavaPsiFacade.getElementFactory(project);
-        PsiImportStatement nullableImport = ReadAction.compute(()-> elementFactory.createImportStatement(findClass(NULLABLE_IMPORT)));
-        PsiImportStatement nonNullImport = ReadAction.compute(()-> elementFactory.createImportStatement(findClass(NON_NULL_IMPORT)));
+        PsiImportStatement nullableImport = ReadAction.compute(() -> 
+                elementFactory.createImportStatement(findClass(NULLABLE_IMPORT)));
+        PsiImportStatement nonNullImport = ReadAction.compute(() -> elementFactory.createImportStatement(findClass(NON_NULL_IMPORT)));
         PsiImportList importList = ReadAction.compute(psiJavaFile::getImportList);
         if (importList != null) {
             PsiElement lastImport = ReadAction.compute(importList::getLastChild);
