@@ -1,6 +1,6 @@
 package com.abstractprogrammer.nullnotion.util;
 
-import com.abstractprogrammer.nullnotion.component.ConnectionSettings;
+import com.abstractprogrammer.nullnotion.service.ConnectionSettings;
 import com.abstractprogrammer.nullnotion.enums.DatabaseType;
 import com.abstractprogrammer.nullnotion.model.DatabaseConnection;
 import com.intellij.openapi.project.Project;

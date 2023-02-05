@@ -1,4 +1,4 @@
-package com.abstractprogrammer.nullnotion.component;
+package com.abstractprogrammer.nullnotion.service;
 
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Service;
