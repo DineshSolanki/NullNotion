@@ -30,8 +30,8 @@ https://plugins.jetbrains.com/plugin/20902-nullnotion
 
 ## Screenshots
 
-<img src="https://user-images.githubusercontent.com/15937452/216801786-edb05d1e-79de-4fa3-9d68-7628fff94146.png" alt="context menu" title="NullNotion" height="400" />
-<img src="https://user-images.githubusercontent.com/15937452/216801839-ca2ad078-aa46-41fa-bd68-380cb41aefc7.png" alt="context menu" title="NullNotion" height="400" />
+<img alt="context menu" height="400" src="https://user-images.githubusercontent.com/15937452/216801786-edb05d1e-79de-4fa3-9d68-7628fff94146.png" title="NullNotion"/>
+<img alt="context menu" height="400" src="https://user-images.githubusercontent.com/15937452/216801839-ca2ad078-aa46-41fa-bd68-380cb41aefc7.png" title="NullNotion"/>
 
 ![image](https://user-images.githubusercontent.com/15937452/216802075-14ceb597-eef1-4c0d-96db-91141517c3d7.png)
 ![image](https://user-images.githubusercontent.com/15937452/216802078-2dd91164-c789-424a-b7e2-ae5ebc25778f.png)
