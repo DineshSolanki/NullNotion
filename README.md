@@ -58,4 +58,5 @@ We welcome contributions to NullNotion! If you want to contribute, please fork t
 NullNotion is open source software licensed under the [GPL-3 License](https://opensource.org/licenses/GPL-3.0).
 
 Development powered by [JetBrains](https://www.jetbrains.com/?from=NullNotion).
+[![https://www.jetbrains.com/?from=NullNotion](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png)](https://www.jetbrains.com/?from=NullNotion)
 
