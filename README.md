@@ -1,3 +1,6 @@
+[plugin-versions]: https://plugins.jetbrains.com/plugin/20902-nullnotion/versions
+[gh:releases]: https://github.com/DineshSolanki/NullNotion/releases
+
 # NullNotion Intellij Plugin
 
 NullNotion is an IntelliJ plugin that helps you automatically annotate fields in an entity class with `@NonNull` or `@Nullable` based on if they are set as not null in the database. 
