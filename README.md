@@ -48,6 +48,15 @@ NullNotion is an IntelliJ plugin that helps you automatically annotate fields in
 ![image](https://user-images.githubusercontent.com/15937452/216802075-14ceb597-eef1-4c0d-96db-91141517c3d7.png)
 ![image](https://user-images.githubusercontent.com/15937452/216802078-2dd91164-c789-424a-b7e2-ae5ebc25778f.png)
 
+## Support Us
+You can support us by the following actions:
+* Star this project
+* Share this plugin with your friends
+* Rate this plugin on [JetBrains plugin repository](https://plugins.jetbrains.com/plugin/20902-nullnotion)
+* Make pull requests
+* Report bugs
+* Tell us your ideas
+* Become a [sponsor](https://github.com/sponsors/DineshSolanki)
 
 ## Contribution
 
@@ -58,5 +67,6 @@ We welcome contributions to NullNotion! If you want to contribute, please fork t
 NullNotion is open source software licensed under the [GPL-3 License](https://opensource.org/licenses/GPL-3.0).
 
 Development powered by [JetBrains](https://www.jetbrains.com/?from=NullNotion).
-[![https://www.jetbrains.com/?from=NullNotion](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png)](https://www.jetbrains.com/?from=NullNotion)
+---
+[![https://www.jetbrains.com/?from=NullNotion](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)](https://www.jetbrains.com/?from=NullNotion)
 
