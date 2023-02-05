@@ -94,7 +94,6 @@ public class AnnotationHelper {
                         indicator.setText("Saving file");
                         saveDocument(psiJavaFile);
                     }
-                    ApplicationManager.getApplication().invokeLater(() -> Messages.showInfoMessage(project, "Null Notion processing complete", "Success"));
                 } catch (IllegalArgumentException | SQLException ex) {
                     logger.error(ex);
                     ApplicationManager.getApplication().invokeLater(() -> Messages.showErrorDialog(project, ex.getMessage(), "Error"));

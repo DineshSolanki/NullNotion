@@ -1,6 +1,8 @@
 package com.abstractprogrammer.nullnotion.actions;
 
 import com.abstractprogrammer.nullnotion.util.AnnotationHelper;
+import com.abstractprogrammer.nullnotion.util.CommonUtil;
+import com.intellij.lang.jvm.JvmModifier;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -10,18 +12,21 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.IndexNotReadyException;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ProcessNullNotionAction extends AnAction {
     private static final String ENTITY_ANNOTATION = "javax.persistence.Entity";
     private final Logger logger = Logger.getInstance(getClass());
-    PsiClass selectedClass;
-    PsiJavaFile psiJavaFile;
     final AnnotationHelper annotationHelper = new AnnotationHelper();
 
     @Override
@@ -30,8 +35,8 @@ public class ProcessNullNotionAction extends AnAction {
         try {
             logger.info("Update method called");
             Project project = e.getProject();
-            VirtualFile selectedFile = e.getData(CommonDataKeys.VIRTUAL_FILE);
-            presentation.setEnabledAndVisible(shouldEnableAction(project, selectedFile));
+            VirtualFile[] selectedFiles = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY);
+            presentation.setEnabledAndVisible(shouldEnableAction(project, selectedFiles));
         } catch (IndexNotReadyException ex) {
             logger.warn("Index is not ready, disable action");
             presentation.setEnabledAndVisible(false);
@@ -42,10 +47,32 @@ public class ProcessNullNotionAction extends AnAction {
     public void actionPerformed(AnActionEvent e) {
         //get the project
         Project project = e.getProject();
-        if (selectedClass != null && psiJavaFile != null) {
-            annotationHelper.processAnnotations(project, psiJavaFile, selectedClass);
-        } else {
-            Messages.showErrorDialog("Could not find the class", "Error");
+        if (project != null) {
+            VirtualFile[] virtualFiles = ReadAction.compute(() -> e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY));
+            int processedFiles = 0;
+            for (VirtualFile virtualFile : virtualFiles) {
+                PsiJavaFile psiJavaFile = ReadAction.compute(() -> 
+                        (PsiJavaFile) PsiManager.getInstance(project).findFile(virtualFile));
+                if (psiJavaFile != null) {
+                    List<PsiClass> classes = ReadAction.compute(() ->
+                            Arrays.stream(psiJavaFile.getClasses())
+                                    .filter(psiClass -> psiClass.hasModifier(JvmModifier.PUBLIC))
+                                    .collect(Collectors.toList()));
+                    if (!classes.isEmpty()) {
+                        PsiClass firstClass = classes.get(0); //as only one class can has public modifier
+                        if (firstClass != null) {
+                            Boolean isEntity = ReadAction.compute(() -> firstClass.hasAnnotation(ENTITY_ANNOTATION));
+                            if (isEntity) {
+                                annotationHelper.processAnnotations(project, psiJavaFile, firstClass);
+                                processedFiles++;
+                            }
+                        }
+                    }
+                }
+                CommonUtil.showBalloonNotification(project,
+                        String.format("Processed %d files", processedFiles),
+                        MessageType.INFO);
+            }
         }
     }
 
@@ -54,36 +81,43 @@ public class ProcessNullNotionAction extends AnAction {
      * also sets the selectedClass and psiJavaFile fields
      *
      * @param project      the current project
-     * @param selectedFile the currently selected file
+     * @param selectedFiles the currently selected file
      * @return true if the action should be enabled, false otherwise
      */
-    private boolean shouldEnableAction(Project project, VirtualFile selectedFile) {
-        boolean isEnable = true;
+    private boolean shouldEnableAction(Project project, VirtualFile @Nullable [] selectedFiles) {
+        boolean shouldEnable = false;
         if (project == null) {
             logger.warn("Project is null");
-            isEnable = false;
-        } else if (selectedFile == null || !selectedFile.getName().endsWith(".java")) {
-            logger.warn("Selected file is not a java file");
-            isEnable = false;
+        } else if (selectedFiles == null || selectedFiles.length == 0) {
+            logger.warn("Selected file is null");
         } else if (!DumbService.isDumb(project)) {
-            psiJavaFile = ReadAction.compute(() -> (PsiJavaFile) PsiManager.getInstance(project).findFile(selectedFile));
-            if (psiJavaFile == null) {
-                logger.warn("could not find psi file");
-                isEnable = false;
-            } else {
-                PsiClass[] classes = ReadAction.compute(() -> psiJavaFile.getClasses());
-                if (classes.length > 0) {
-                    selectedClass = classes[0];
+            for (VirtualFile file : selectedFiles) {
+                if (file == null || !file.getName().endsWith(".java")) {
+                    logger.warn("Selected file is not a java file");
+                    continue;
                 }
-                if (selectedClass == null) {
-                    logger.warn("could not find any class in the file");
-                    isEnable = false;
+                PsiJavaFile psiJavaFile = ReadAction.compute(() -> (PsiJavaFile) PsiManager.getInstance(project).findFile(file));
+                if (psiJavaFile == null) {
+                    logger.warn("could not find psi file");
                 } else {
-                    isEnable = ReadAction.compute(() -> selectedClass.hasAnnotation(ENTITY_ANNOTATION));
+                    List<PsiClass> classes = ReadAction.compute(() -> 
+                            Arrays.stream(psiJavaFile.getClasses())
+                                    .filter(psiClass -> psiClass.hasModifier(JvmModifier.PUBLIC))
+                                    .collect(Collectors.toList()));
+                    if (!classes.isEmpty()) {
+                        PsiClass firstClass = classes.get(0); //as only one class can has public modifier
+                        if (firstClass != null) {
+                            Boolean isEntity = ReadAction.compute(() -> firstClass.hasAnnotation(ENTITY_ANNOTATION));
+                            if (isEntity) {
+                                shouldEnable = true;
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
-        return isEnable;
+        return shouldEnable;
     }
 }
 
