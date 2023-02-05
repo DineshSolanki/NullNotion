@@ -2,10 +2,19 @@
 
 NullNotion is an IntelliJ plugin that helps you automatically annotate fields in an entity class with `@NonNull` or `@Nullable` based on if they are set as not null in the database. 
 
-## Installation 
+## Installation
 
-The plugin can be installed directly from the JetBrains marketplace using the following link: 
-https://plugins.jetbrains.com/plugin/20902-nullnotion 
+<a href="https://plugins.jetbrains.com/plugin/20902-nullnotion " target="_blank">
+    <img src="https://camo.githubusercontent.com/d1e8ac9d3ba6c06ad1d03019aae5e2c7e8d85245f0f38f1bfbd5ecdc6cee0e58/68747470733a2f2f63646e2e6a7364656c6976722e6e65742f67682f596969477578696e672f5472616e736c6174696f6e506c7567696e406d61737465722f696d616765732f696e7374616c6c6174696f6e5f627574746f6e2e737667" height="52" alt="Get from Marketplace" title="Get from Marketplace">
+</a>
+
+- **Installing from the plugin repository within the IDE:**
+    - <kbd>Preferences(Settings)</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search and find <b>"NullNotion"</b></kbd> > <kbd>Install Plugin</kbd>.
+    
+- **Installing manually:**
+    - Download the plugin package on [GitHub Releases][gh:releases] or in the [JetBrains Plugin Repository][plugin-versions].
+    - <kbd>Preferences(Settings)</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd> >
+      Select the plugin package and install (no need to unzip)
 
 ## Features
 
