@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 @Service
-@State(name = "ConnectionSettings", storages = @Storage("connectionSettings.xml"))
+@State(name = "com.abstractprogrammer.nullnotion.service.ConnectionSettings", storages = @Storage("connectionSettings.xml"))
 public final class ConnectionSettings implements PersistentStateComponent<ConnectionSettings.State> {
     private State state = new State();
 
