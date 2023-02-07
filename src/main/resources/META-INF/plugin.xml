@@ -42,7 +42,13 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-
+        <applicationService
+                serviceImplementation="com.abstractprogrammer.nullnotion.service.SettingsState"/>
+        <applicationConfigurable
+                parentId="tools"
+                instance="com.abstractprogrammer.nullnotion.configurable.SettingsConfigurable"
+                id="com.abstractprogrammer.nullnotion.configurable.SettingsConfigurable"
+                displayName="NullNotion"/>
     </extensions>
     <actions>
         <action id="Process NullNotion" class="com.abstractprogrammer.nullnotion.actions.ProcessNullNotionAction"
