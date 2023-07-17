@@ -46,16 +46,13 @@ public class SettingsConfigurable implements Configurable {
 
   @Override
   public void apply() {
-    SettingsState settings = SettingsState.getInstance();
-    settings.host = mySettingsComponent.getHostText();
-    settings.port = mySettingsComponent.getPortText();
+    SettingsState settings = mySettingsComponent.getSettingsState();
   }
 
   @Override
   public void reset() {
     SettingsState settings = SettingsState.getInstance();
-    mySettingsComponent.setHostText(settings.host);
-    mySettingsComponent.setDatabaseText("");
+    mySettingsComponent.setSettingsState(settings);
   }
 
   @Override
