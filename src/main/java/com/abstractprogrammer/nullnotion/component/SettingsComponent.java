@@ -2,6 +2,8 @@ package com.abstractprogrammer.nullnotion.component;
 
 import com.abstractprogrammer.nullnotion.enums.AuthenticationMode;
 import com.abstractprogrammer.nullnotion.enums.DatabaseType;
+import com.abstractprogrammer.nullnotion.model.DatabaseConnection;
+import com.abstractprogrammer.nullnotion.service.SettingsState;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBLabel;
@@ -48,7 +50,21 @@ public class SettingsComponent {
                 .addComponent(testConnectionBtn)
                 .addComponentFillVertically(new JPanel(), 0)
                 .getPanel();
-        testConnectionBtn.addActionListener(e -> Messages.showInfoMessage("Connection successful", "Test Connection"));
+        testConnectionBtn.addActionListener(e -> {
+            DatabaseConnection databaseConnection = new DatabaseConnection();
+            databaseConnection.setHost(hostTxt.getText());
+            databaseConnection.setPort(portTxt.getText());
+            databaseConnection.setDatabaseType((DatabaseType) databaseTypeComboBox.getSelectedItem());
+            databaseConnection.setAuthenticationMode((AuthenticationMode) authenticationModeComboBox.getSelectedItem());
+            databaseConnection.setUsername(userTxt.getText());
+            databaseConnection.setPassword(String.valueOf(passwordTxt.getPassword()));
+            databaseConnection.setDatabaseName(databaseTxt.getText());
+            if (databaseConnection.testConnection()) {
+                Messages.showInfoMessage("Connection successful", "Connection Test");
+            } else {
+                Messages.showErrorDialog("Connection failed", "Connection Test");
+            }
+        });
         authenticationModeComboBox.addActionListener(e -> {
             AuthenticationMode mode = (AuthenticationMode) authenticationModeComboBox.getSelectedItem();
             if (mode != null) {
@@ -130,5 +146,26 @@ public class SettingsComponent {
 
     public void setDatabaseType(DatabaseType databaseType) {
         databaseTypeComboBox.setSelectedItem(databaseType);
+    }
+
+    public SettingsState getSettingsState() {
+        SettingsState settingsState = SettingsState.getInstance();
+        settingsState.host = hostTxt.getText();
+        settingsState.port = portTxt.getText();
+        settingsState.authenticationMode = (AuthenticationMode) authenticationModeComboBox.getSelectedItem();
+        settingsState.username = userTxt.getText();
+        settingsState.password = String.valueOf(passwordTxt.getPassword());
+        settingsState.databaseName = databaseTxt.getText();
+        settingsState.databaseType = (DatabaseType) databaseTypeComboBox.getSelectedItem();
+        return settingsState;
+    }
+    public void setSettingsState(SettingsState settingsState) {
+        hostTxt.setText(settingsState.host);
+        portTxt.setText(settingsState.port);
+        authenticationModeComboBox.setSelectedItem(settingsState.authenticationMode);
+        userTxt.setText(settingsState.username);
+        passwordTxt.setText(settingsState.password);
+        databaseTxt.setText(settingsState.databaseName);
+        databaseTypeComboBox.setSelectedItem(settingsState.databaseType);
     }
 }
