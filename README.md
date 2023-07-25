@@ -1,4 +1,5 @@
 # NullNotion IntelliJ Plugin
+![Lines of code](https://sloc.xyz/github/DineshSolanki/NullNotion)
 
 NullNotion is your ultimate companion in IntelliJ that automagically annotates fields in your entity classes with `@NonNull` or `@Nullable` based on their database constraints. No more tedious manual annotations!
 
