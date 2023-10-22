@@ -10,10 +10,10 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre8")
-    implementation("mysql:mysql-connector-java:5.1.6")
-    implementation("org.postgresql:postgresql:42.2.23")
-    implementation("com.oracle.database.jdbc:ojdbc10:19.17.0.0")
+    implementation("com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre11")
+    implementation("mysql:mysql-connector-java:8.0.33")
+    implementation("org.postgresql:postgresql:42.5.4")
+    implementation("com.oracle.database.jdbc:ojdbc10:19.18.0.0")
 }
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
