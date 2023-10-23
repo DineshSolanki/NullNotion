@@ -4,12 +4,16 @@ import com.abstractprogrammer.nullnotion.enums.AuthenticationMode;
 import com.abstractprogrammer.nullnotion.enums.DatabaseType;
 import com.abstractprogrammer.nullnotion.model.DatabaseConnection;
 import com.abstractprogrammer.nullnotion.service.SettingsState;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPasswordField;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -51,19 +55,20 @@ public class SettingsComponent {
                 .addComponentFillVertically(new JPanel(), 0)
                 .getPanel();
         testConnectionBtn.addActionListener(e -> {
-            DatabaseConnection databaseConnection = new DatabaseConnection();
-            databaseConnection.setHost(hostTxt.getText());
-            databaseConnection.setPort(portTxt.getText());
-            databaseConnection.setDatabaseType((DatabaseType) databaseTypeComboBox.getSelectedItem());
-            databaseConnection.setAuthenticationMode((AuthenticationMode) authenticationModeComboBox.getSelectedItem());
-            databaseConnection.setUsername(userTxt.getText());
-            databaseConnection.setPassword(String.valueOf(passwordTxt.getPassword()));
-            databaseConnection.setDatabaseName(databaseTxt.getText());
-            if (databaseConnection.testConnection()) {
-                Messages.showInfoMessage("Connection successful", "Connection Test");
-            } else {
-                Messages.showErrorDialog("Connection failed", "Connection Test");
-            }
+            ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
+                DatabaseConnection databaseConnection = getDatabaseConnection();
+
+                boolean result = databaseConnection.testConnection();
+                if (result) {
+                    ApplicationManager.getApplication().invokeAndWait(() -> Messages.showInfoMessage("Connection successful",
+                            "Connection Test"), ModalityState.any());
+
+                } else {
+                    ApplicationManager.getApplication().invokeAndWait(() ->
+                    Messages.showErrorDialog("Connection failed",
+                            "Connection Test"), ModalityState.any());
+                }
+            }, "Testing connection...", false, null);
         });
         authenticationModeComboBox.addActionListener(e -> {
             AuthenticationMode mode = (AuthenticationMode) authenticationModeComboBox.getSelectedItem();
@@ -74,6 +79,19 @@ public class SettingsComponent {
                 mainPanel.repaint();
             }
         });
+    }
+
+    @NotNull
+    private DatabaseConnection getDatabaseConnection() {
+        DatabaseConnection databaseConnection = new DatabaseConnection();
+        databaseConnection.setHost(hostTxt.getText());
+        databaseConnection.setPort(portTxt.getText());
+        databaseConnection.setDatabaseType((DatabaseType) databaseTypeComboBox.getSelectedItem());
+        databaseConnection.setAuthenticationMode((AuthenticationMode) authenticationModeComboBox.getSelectedItem());
+        databaseConnection.setUsername(userTxt.getText());
+        databaseConnection.setPassword(String.valueOf(passwordTxt.getPassword()));
+        databaseConnection.setDatabaseName(databaseTxt.getText());
+        return databaseConnection;
     }
 
     private JPanel createAuthenticationPanel(AuthenticationMode mode) {
