@@ -5,6 +5,7 @@ import com.abstractprogrammer.nullnotion.enums.DatabaseType;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class DatabaseConnection {
     private String connectionString;
@@ -85,11 +86,9 @@ public class DatabaseConnection {
         this.databaseName = databaseName;
     }
 
-    public boolean testConnection() {
+    public void testConnection() throws ClassNotFoundException, SQLException {
         connectionString = buildConnectionString();
-        boolean result = false;
-        try {
-            // Load the JDBC driver based on the database type
+        // Load the JDBC driver based on the database type
             Class.forName(databaseType.getDriver());
 
             Connection connection;
@@ -115,13 +114,8 @@ public class DatabaseConnection {
             }
 
             if (connection != null) {
-                result = true;
                 connection.close();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return result;
     }
     public String buildConnectionString() {
         if (databaseType == null || host == null || port == null || databaseName == null) {

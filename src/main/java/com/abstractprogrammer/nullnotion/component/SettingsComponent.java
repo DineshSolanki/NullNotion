@@ -6,7 +6,9 @@ import com.abstractprogrammer.nullnotion.model.DatabaseConnection;
 import com.abstractprogrammer.nullnotion.service.SettingsState;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.ui.components.JBLabel;
@@ -55,20 +57,20 @@ public class SettingsComponent {
                 .addComponentFillVertically(new JPanel(), 0)
                 .getPanel();
         testConnectionBtn.addActionListener(e -> {
-            ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
-                DatabaseConnection databaseConnection = getDatabaseConnection();
+            DatabaseConnection databaseConnection = getDatabaseConnection();
 
-                boolean result = databaseConnection.testConnection();
-                if (result) {
-                    ApplicationManager.getApplication().invokeAndWait(() -> Messages.showInfoMessage("Connection successful",
-                            "Connection Test"), ModalityState.any());
-
-                } else {
-                    ApplicationManager.getApplication().invokeAndWait(() ->
-                    Messages.showErrorDialog("Connection failed",
-                            "Connection Test"), ModalityState.any());
+            Task.Modal task = new Task.Modal(null, "Testing Connection...", false) {
+                public void run(@NotNull ProgressIndicator indicator) {
+                    try {
+                        databaseConnection.testConnection();
+                        ApplicationManager.getApplication().invokeLater(() -> Messages.showInfoMessage("Connection successful","Connection Test"), ModalityState.any());
+                    } catch (Exception ex) {
+                        ApplicationManager.getApplication().invokeLater(() -> Messages.showErrorDialog("Connection failed: " + ex.getMessage(),"Connection Test"), ModalityState.any());
+                    }
                 }
-            }, "Testing connection...", false, null);
+            };
+
+            ProgressManager.getInstance().run(task);
         });
         authenticationModeComboBox.addActionListener(e -> {
             AuthenticationMode mode = (AuthenticationMode) authenticationModeComboBox.getSelectedItem();
