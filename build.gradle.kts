@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.12.0"
+    id("org.jetbrains.intellij") version "1.16.0"
 }
 
 group = "com.abstractprogrammer"
@@ -37,8 +37,8 @@ tasks {
     }
 
     signPlugin {
-        certificateChain.set(File(System.getenv("CERTIFICATE_CHAIN")).readText(Charsets.UTF_8))
-        privateKey.set(File(System.getenv("PRIVATE_KEY")).readText(Charsets.UTF_8))
+        certificateChainFile.set(file(System.getenv("CERTIFICATE_CHAIN")))
+        privateKeyFile.set(file(System.getenv("PRIVATE_KEY")))
         password.set(System.getenv("PRIVATE_KEY_PASSWORD"))
     }
 
