@@ -188,4 +188,14 @@ public class SettingsComponent {
         databaseTxt.setText(settingsState.databaseName);
         databaseTypeComboBox.setSelectedItem(settingsState.databaseType);
     }
+
+    public String getConnectionString() {
+        return getDatabaseConnection().buildConnectionString();
+    }
+    public String getUsername() {
+        return userTxt.getText();
+    }
+    public String getPassword() {
+        return String.valueOf(passwordTxt.getPassword());
+    }
 }

@@ -1,5 +1,6 @@
 package com.abstractprogrammer.nullnotion.service;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.components.State;
@@ -26,6 +27,11 @@ public final class ConnectionSettings implements PersistentStateComponent<Connec
     @Override
     public void loadState(@NotNull State state) {
         this.state = state;
+    }
+
+    public void setData(String connectionString, String databaseName) {
+        state.connectionString = connectionString;
+        state.databaseName = databaseName;
     }
 }
 
