@@ -27,7 +27,7 @@ public final class SettingsState implements PersistentStateComponent<SettingsSta
     }
 
     @Override
-    public @Nullable SettingsState getState() {
+    public @NotNull SettingsState getState() {
         return this;
     }
 
