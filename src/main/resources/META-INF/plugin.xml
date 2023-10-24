@@ -23,17 +23,20 @@
     Try NullNotion today and take your coding to the next level!
   ]]></description>
     <change-notes><![CDATA[
-    <h3 id="what-s-new-">What&#39;s new? -</h3>
     <ul>
-    <li>Plugin now runs in background and shows progress in status bar</li>
+        <li><b>1.3</b>
+        <ul>
+            <li>Added Settings page</li>
+        </ul>
+        <li><b>1.2</b>
+        <ul>
+            <li>Plugin now runs in the background, and shows progress in the status bar</li>
+            <li>Fixed UI freeze</li>
+            <li>Fixed not able to cancel processing</li>
+            <li>Fixed only MSSQL driver loading</li>
+        </ul>
     </ul>
-    <h3 id="what-s-fixed-">What&#39;s fixed?-</h3>
-    <ul>
-    <li>UI freeze</li>
-    <li>Not able to cancel processing</li>
-    <li>only MSSQL driver loading</li>
-    </ul>
-   ]]></change-notes>
+]]></change-notes>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
