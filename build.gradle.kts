@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "com.abstractprogrammer"
-version = "1.2"
+version = "1.3"
 
 repositories {
     mavenCentral()
