@@ -1,8 +1,10 @@
 package com.abstractprogrammer.nullnotion.util;
 
+import com.abstractprogrammer.nullnotion.enums.AuthenticationMode;
 import com.abstractprogrammer.nullnotion.service.ConnectionSettings;
 import com.abstractprogrammer.nullnotion.enums.DatabaseType;
 import com.abstractprogrammer.nullnotion.model.DatabaseConnection;
+import com.abstractprogrammer.nullnotion.service.SettingsState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import org.apache.commons.lang.StringUtils;
@@ -43,24 +45,44 @@ public class DatabaseHelper {
     }
 
     public static Optional<Connection> getDatabaseDriver(Project project, DatabaseConnection databaseConnection) throws SQLException {
-        ConnectionSettings connectionSettings = project.getService(ConnectionSettings.class);
-        ConnectionSettings.State settingsState = connectionSettings.getState();
-
-        String connectionString = databaseConnection.getConnectionString();
-        DatabaseType selectedOption = databaseConnection.getDatabaseType();
-        try {
-            Class.forName(selectedOption.getDriver());
-        } catch (ClassNotFoundException e) {
-            if (settingsState != null) {
-                settingsState.connectionString = null;
-                settingsState.databaseName = null;
+        SettingsState settingsService = project.getService(SettingsState.class);
+        if (settingsService != null) {
+            try {
+                Class.forName(settingsService.databaseType.getDriver());
+            } catch (ClassNotFoundException e) {
+                return Optional.empty();
             }
-            return Optional.empty();
+            switch (settingsService.authenticationMode) {
+                case NONE:
+                case OS_CREDENTIALS:
+                    return Optional.of(DriverManager.getConnection(databaseConnection.getConnectionString()));
+                case USER:
+                    return Optional.of(DriverManager.getConnection(databaseConnection.getConnectionString(), settingsService.username, ""));
+                case USER_PASSWORD:
+                    return Optional.of(DriverManager.getConnection(databaseConnection.getConnectionString(), settingsService.username, settingsService.password));
+            }
         }
-        if (settingsState != null) {
-            settingsState.connectionString = connectionString;
-            settingsState.databaseName = selectedOption.name();
+        else {
+            ConnectionSettings connectionSettings = project.getService(ConnectionSettings.class);
+            ConnectionSettings.State settingsState = connectionSettings.getState();
+
+            String connectionString = databaseConnection.getConnectionString();
+            DatabaseType selectedOption = databaseConnection.getDatabaseType();
+            try {
+                Class.forName(selectedOption.getDriver());
+            } catch (ClassNotFoundException e) {
+                if (settingsState != null) {
+                    settingsState.connectionString = null;
+                    settingsState.databaseName = null;
+                }
+                return Optional.empty();
+            }
+            if (settingsState != null) {
+                settingsState.connectionString = connectionString;
+                settingsState.databaseName = selectedOption.name();
+            }
+            return Optional.of(DriverManager.getConnection(connectionString));
         }
-        return Optional.of(DriverManager.getConnection(connectionString));
+        return Optional.empty();
     }
 }

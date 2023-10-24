@@ -1,19 +1,19 @@
 plugins {
     id("java")
-    id("org.jetbrains.intellij") version "1.12.0"
+    id("org.jetbrains.intellij") version "1.16.0"
 }
 
 group = "com.abstractprogrammer"
-version = "1.2"
+version = "1.3"
 
 repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre8")
-    implementation("mysql:mysql-connector-java:5.1.6")
-    implementation("org.postgresql:postgresql:42.2.23")
-    implementation("com.oracle.database.jdbc:ojdbc10:19.17.0.0")
+    implementation("com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre11")
+    implementation("mysql:mysql-connector-java:8.0.33")
+    implementation("org.postgresql:postgresql:42.5.4")
+    implementation("com.oracle.database.jdbc:ojdbc10:19.18.0.0")
 }
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
@@ -33,12 +33,11 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("221")
-        untilBuild.set("231.*")
     }
 
     signPlugin {
-        certificateChain.set(File(System.getenv("CERTIFICATE_CHAIN")).readText(Charsets.UTF_8))
-        privateKey.set(File(System.getenv("PRIVATE_KEY")).readText(Charsets.UTF_8))
+        certificateChainFile.set(file(System.getenv("CERTIFICATE_CHAIN")))
+        privateKeyFile.set(file(System.getenv("PRIVATE_KEY")))
         password.set(System.getenv("PRIVATE_KEY_PASSWORD"))
     }
 
