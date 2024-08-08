@@ -1,6 +1,7 @@
 package com.abstractprogrammer.nullnotion.actions;
 
 import com.abstractprogrammer.nullnotion.util.AnnotationHelper;
+import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ProcessNullNotionAction extends AnAction {
     private static final String ENTITY_ANNOTATION = "javax.persistence.Entity";
+    private static final String ENTITY_JAKARTA_ANNOTATION = "jakarta.persistence.Entity";
     private final Logger logger = Logger.getInstance(getClass());
     PsiClass selectedClass;
     PsiJavaFile psiJavaFile;
@@ -79,11 +81,16 @@ public class ProcessNullNotionAction extends AnAction {
                     logger.warn("could not find any class in the file");
                     isEnable = false;
                 } else {
-                    isEnable = ReadAction.compute(() -> selectedClass.hasAnnotation(ENTITY_ANNOTATION));
+                    isEnable = ReadAction.compute(() -> selectedClass.hasAnnotation(ENTITY_ANNOTATION) || selectedClass.hasAnnotation(ENTITY_JAKARTA_ANNOTATION));
                 }
             }
         }
         return isEnable;
+    }
+
+    @Override
+    public @NotNull ActionUpdateThread getActionUpdateThread() {
+        return ActionUpdateThread.BGT;
     }
 }
 
