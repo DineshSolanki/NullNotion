@@ -10,15 +10,16 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation("com.microsoft.sqlserver:mssql-jdbc:12.2.0.jre11")
+    implementation("com.microsoft.sqlserver:mssql-jdbc:12.6.3.jre11")
     implementation("mysql:mysql-connector-java:8.0.33")
-    implementation("org.postgresql:postgresql:42.5.4")
-    implementation("com.oracle.database.jdbc:ojdbc10:19.18.0.0")
+    implementation("org.postgresql:postgresql:42.7.3")
+    implementation("com.oracle.database.jdbc:ojdbc10:19.21.0.0")
+    implementation("org.apache.commons:commons-text:1.12.0")
 }
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
-    version.set("2022.1.4")
+    version.set("2024.2")
     type.set("IC") // Target IDE Platform
 
     plugins.set(listOf("com.intellij.java"))
@@ -27,12 +28,12 @@ intellij {
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "11"
-        targetCompatibility = "11"
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
     }
 
     patchPluginXml {
-        sinceBuild.set("221")
+        sinceBuild.set("242")
     }
 
     signPlugin {

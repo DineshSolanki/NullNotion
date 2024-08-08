@@ -1,13 +1,12 @@
 package com.abstractprogrammer.nullnotion.util;
 
-import com.abstractprogrammer.nullnotion.enums.AuthenticationMode;
 import com.abstractprogrammer.nullnotion.service.ConnectionSettings;
 import com.abstractprogrammer.nullnotion.enums.DatabaseType;
 import com.abstractprogrammer.nullnotion.model.DatabaseConnection;
 import com.abstractprogrammer.nullnotion.service.SettingsState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -52,15 +51,14 @@ public class DatabaseHelper {
             } catch (ClassNotFoundException e) {
                 return Optional.empty();
             }
-            switch (settingsService.authenticationMode) {
-                case NONE:
-                case OS_CREDENTIALS:
-                    return Optional.of(DriverManager.getConnection(databaseConnection.getConnectionString()));
-                case USER:
-                    return Optional.of(DriverManager.getConnection(databaseConnection.getConnectionString(), settingsService.username, ""));
-                case USER_PASSWORD:
-                    return Optional.of(DriverManager.getConnection(databaseConnection.getConnectionString(), settingsService.username, settingsService.password));
-            }
+            return switch (settingsService.authenticationMode) {
+                case NONE, OS_CREDENTIALS ->
+                        Optional.of(DriverManager.getConnection(databaseConnection.getConnectionString()));
+                case USER ->
+                        Optional.of(DriverManager.getConnection(databaseConnection.getConnectionString(), settingsService.username, ""));
+                case USER_PASSWORD ->
+                        Optional.of(DriverManager.getConnection(databaseConnection.getConnectionString(), settingsService.username, settingsService.password));
+            };
         }
         else {
             ConnectionSettings connectionSettings = project.getService(ConnectionSettings.class);
@@ -83,6 +81,5 @@ public class DatabaseHelper {
             }
             return Optional.of(DriverManager.getConnection(connectionString));
         }
-        return Optional.empty();
     }
 }
