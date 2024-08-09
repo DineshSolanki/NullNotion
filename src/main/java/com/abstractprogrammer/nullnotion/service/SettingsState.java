@@ -9,7 +9,6 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 @Service
 @State(name = "com.abstractprogrammer.nullnotion.service.SettingsState", storages = @Storage("NullNotionSettings.xml"))
