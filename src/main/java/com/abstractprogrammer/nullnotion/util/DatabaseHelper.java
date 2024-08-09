@@ -44,7 +44,7 @@ public class DatabaseHelper {
     }
 
     public static Optional<Connection> getDatabaseDriver(Project project, DatabaseConnection databaseConnection) throws SQLException {
-        SettingsState settingsService = project.getService(SettingsState.class);
+        SettingsState settingsService = SettingsState.getInstance();
         if (settingsService != null) {
             try {
                 Class.forName(settingsService.databaseType.getDriver());

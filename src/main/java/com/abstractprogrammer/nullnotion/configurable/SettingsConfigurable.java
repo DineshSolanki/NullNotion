@@ -78,7 +78,7 @@ public class SettingsConfigurable implements Configurable {
   public void apply() {
     SettingsState settings = mySettingsComponent.getSettingsState();
     Project currentProject = getCurrentProject();
-    Objects.requireNonNull(currentProject).getService(SettingsState.class).loadState(settings);
+    SettingsState.getInstance().loadState(settings);
     String connectionString = mySettingsComponent.getConnectionString();
     Objects.requireNonNull(currentProject).getService(ConnectionSettings.class).setData(connectionString,
             settings.databaseType.name());

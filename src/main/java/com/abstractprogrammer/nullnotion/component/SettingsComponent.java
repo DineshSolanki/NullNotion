@@ -98,34 +98,27 @@ public class SettingsComponent {
 
     private JPanel createAuthenticationPanel(AuthenticationMode mode) {
         FormBuilder formBuilder = FormBuilder.createFormBuilder();
-        switch (mode) {
-            case NONE:
-                return formBuilder.getPanel();
-            case USER:
-                return formBuilder
-                        .addLabeledComponent(new JBLabel("Username"),
-                                userTxt,
-                                1,
-                                false)
-                        .addComponentFillVertically(new JPanel(), 0)
-                        .getPanel();
-            case USER_PASSWORD:
-                return formBuilder
-                        .addLabeledComponent(new JBLabel("Username"),
-                                userTxt,
-                                1,
-                                false)
-                        .addLabeledComponent(new JBLabel("Password"),
-                                passwordTxt,
-                                1,
-                                false)
-                        .addComponentFillVertically(new JPanel(), 0)
-                        .getPanel();
-            case OS_CREDENTIALS:
-                return formBuilder.getPanel();
-            default:
-                return formBuilder.getPanel();
-        }
+        return switch (mode) {
+            case USER -> formBuilder
+                    .addLabeledComponent(new JBLabel("Username"),
+                            userTxt,
+                            1,
+                            false)
+                    .addComponentFillVertically(new JPanel(), 0)
+                    .getPanel();
+            case USER_PASSWORD -> formBuilder
+                    .addLabeledComponent(new JBLabel("Username"),
+                            userTxt,
+                            1,
+                            false)
+                    .addLabeledComponent(new JBLabel("Password"),
+                            passwordTxt,
+                            1,
+                            false)
+                    .addComponentFillVertically(new JPanel(), 0)
+                    .getPanel();
+            default -> formBuilder.getPanel();
+        };
     }
 
     public JPanel getPanel() {
